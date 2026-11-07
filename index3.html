@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KIỂM TRA GIỮA HỌC KÌ I - CÔNG NGHỆ 10</title>
+<style>
+    :root {
+        --primary: #00796b;
+        --primary-dark: #004d40;
+        --secondary: #e0f2f1;
+        --success: #2e7d32;
+        --danger: #c62828;
+        --bg: #f4f6f8;
+        --card: #ffffff;
+        --text: #212121;
+        --border: #cfd8dc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 70px; }
+    .container { max-width: 820px; margin: 0 auto; padding: 12px; }
+
+    /* Header thanh ghim trên */
+    .sticky-bar {
+        position: -webkit-sticky; position: sticky; top: 0; z-index: 99;
+        background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+        border-radius: 0 0 10px 10px;
+    }
+    .badge { font-size: 0.85rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+    .badge-info { background: var(--secondary); color: var(--primary-dark); }
+    .badge-code { background: #fff3e0; color: #e65100; margin-left: 4px; }
+    .timer-box { font-size: 1.15rem; font-weight: bold; color: var(--danger); background: #ffebee; padding: 4px 10px; border-radius: 8px; border: 1px solid #ffcdd2; }
+
+    /* Khối thẻ */
+    .card { background: var(--card); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .section-title { font-size: 1.05rem; font-weight: 800; color: var(--primary-dark); margin: 22px 0 10px; padding-left: 8px; border-left: 4px solid var(--primary); }
+    .q-text { font-size: 0.98rem; font-weight: 600; margin-bottom: 12px; }
+
+    /* Lựa chọn trắc nghiệm */
+    .option-row { display: block; margin-bottom: 8px; cursor: pointer; }
+    .option-content {
+        display: flex; align-items: flex-start; padding: 10px 12px;
+        border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #fff;
+    }
+    .option-row input[type="radio"] { margin-right: 10px; margin-top: 3px; transform: scale(1.2); }
+
+    /* Bảng Đúng / Sai */
+    .tf-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.92rem; }
+    .tf-table th, .tf-table td { border: 1px solid var(--border); padding: 8px 6px; }
+    .tf-table th { background: #f1f3f4; text-align: center; font-weight: 600; }
+    .tf-col-opt { width: 55px; text-align: center; }
+    .tf-col-opt input { transform: scale(1.25); cursor: pointer; }
+
+    /* Lời giải & Kết quả */
+    .ans-correct { background-color: #e8f5e9 !important; border-color: #4caf50 !important; color: #1b5e20 !important; font-weight: 600; }
+    .ans-wrong { background-color: #ffebee !important; border-color: #ef5350 !important; color: #b71c1c !important; }
+    .explanation-box { display: none; margin-top: 10px; padding: 10px; background: #fafafa; border-radius: 6px; border-left: 3px solid var(--primary); font-size: 0.9rem; color: #37474f; }
+
+    /* Nút bấm (Tối ưu cảm ứng mobile) */
+    .btn {
+        display: block; width: 100%; min-height: 48px; padding: 12px;
+        background: var(--primary); color: #fff; border: none; border-radius: 8px;
+        font-size: 1.05rem; font-weight: bold; cursor: pointer; text-align: center;
+        touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    }
+    .btn:active { background: var(--primary-dark); }
+    .btn-secondary { background: #546e7a; margin-top: 12px; }
+
+    /* Ô nhập thông tin (font 16px chống iOS zoom) */
+    .text-input {
+        width: 100%; min-height: 46px; font-size: 16px; padding: 10px;
+        border: 1.5px solid var(--border); border-radius: 8px; margin-bottom: 14px; outline: none;
+    }
+    .text-input:focus { border-color: var(--primary); }
+
+    /* Modal xác nhận */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+        justify-content: center; align-items: center; padding: 16px;
+    }
+    .modal-box { background: #fff; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; text-align: center; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-cancel { background: #9e9e9e; }
+
+    /* Điểm số */
+    .score-card { background: #e0f2f1; border-radius: 10px; padding: 18px; text-align: center; margin-bottom: 16px; border: 1px solid #b2dfdb; }
+    .score-val { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin: 6px 0; }
+    .feedback-note { text-align: left; background: #fff; padding: 12px; border-radius: 6px; font-size: 0.92rem; border-left: 4px solid var(--primary); margin-top: 10px; }
+
+    /* Tự luận */
+    .essay-card { background: #fffde7; border-left: 4px solid #fbc02d; padding: 14px; margin-top: 10px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MÀN HÌNH BẮT ĐẦU -->
+    <div id="screen-start" class="card" style="margin-top: 20px;">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p style="font-size: 0.85rem; font-weight: bold; color: #555;">SỞ GD&ĐT TP ĐÀ NẴNG - TRƯỜNG THPT TRẦN QUÝ CÁP</p>
+            <h2 style="color: var(--primary-dark); font-size: 1.25rem; margin-top: 4px;">ĐỀ KIỂM TRA ĐỊNH KÌ GIỮA HỌC KÌ I</h2>
+            <p style="color: #616161; font-size: 0.9rem;">Môn: Công nghệ 10 (Công nghiệp) | Thời gian: 25 phút</p>
+        </div>
+
+        <label style="font-weight: 600; font-size: 0.95rem;">Họ và tên thí sinh:</label>
+        <input type="text" id="inp-name" class="text-input" placeholder="Nhập họ và tên..." autocomplete="off">
+
+        <label style="font-weight: 600; font-size: 0.95rem;">Lớp:</label>
+        <input type="text" id="inp-class" class="text-input" placeholder="Nhập tên lớp..." autocomplete="off">
+
+        <div style="background: #e0f2f1; padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 18px; color: #004d40;">
+            <b>Cấu trúc đề kiểm tra (Tối đa 7,0 điểm trắc nghiệm):</b><br>
+            • <b>Phần I:</b> 12 câu trắc nghiệm nhiều lựa chọn (3,0 điểm).<br>
+            • <b>Phần II:</b> 4 câu trắc nghiệm Đúng/Sai (4,0 điểm).<br>
+            • <b>Phần III:</b> Tự luận tham khảo (3,0 điểm - mở sau khi nộp bài).<br>
+            • <i>Mỗi lần vào thi đề sẽ tự động sinh mã đề và xáo trộn câu hỏi.</i>
+        </div>
+
+        <button type="button" id="btn-start" class="btn">BẮT ĐẦU LÀM BÀI</button>
+    </div>
+
+    <!-- MÀN HÌNH THI & KẾT QUẢ -->
+    <div id="screen-exam" style="display: none;">
+        <div class="sticky-bar">
+            <div>
+                <span class="badge badge-info" id="txt-student">HS: </span>
+                <span class="badge badge-code" id="txt-code">Mã đề: </span>
+            </div>
+            <div class="timer-box" id="timer-display">25:00</div>
+        </div>
+
+        <div id="result-box" style="display: none; margin-top: 14px;"></div>
+
+        <!-- PHẦN I -->
+        <div class="section-title">PHẦN I. TRẮC NGHIỆM NHIỀU LỰA CHỌN (12 CÂU - 3,0 ĐIỂM)</div>
+        <div id="container-p1"></div>
+
+        <!-- PHẦN II -->
+        <div class="section-title">PHẦN II. TRẮC NGHIỆM ĐÚNG/SAI (4 CÂU - 4,0 ĐIỂM)</div>
+        <div id="container-p2"></div>
+
+        <!-- PHẦN III -->
+        <div id="container-p3" style="display: none;">
+            <div class="section-title">PHẦN III. CÂU HỎI TỰ LUẬN (3,0 ĐIỂM - THAM KHẢO)</div>
+            <div class="card" id="essay-content"></div>
+        </div>
+
+        <button type="button" id="btn-submit" class="btn" style="margin-top: 20px;">NỘP BÀI THI</button>
+        <button type="button" id="btn-restart" class="btn btn-secondary" style="display: none;">LÀM ĐỀ THI MỚI (MÃ ĐỀ KHÁC)</button>
+    </div>
+</div>
+
+<!-- MODAL XÁC NHẬN NỘP BÀI -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+        <h3 style="color: var(--primary-dark); margin-bottom: 8px;">Xác nhận nộp bài</h3>
+        <p style="font-size: 0.95rem; color: #555;">Em có chắc chắn muốn nộp bài thi ngay bây giờ không?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" id="btn-modal-cancel">Xem lại</button>
+            <button type="button" class="btn" id="btn-modal-ok">Nộp bài</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===============================================================
+   NGÂN HÀNG CÂU HỎI TRÍCH XUẤT TỪ FILE ĐỀ CƯƠNG TRẦN QUÝ CÁP
+   =============================================================== */
+// 1. PHẦN I: NHIỀU LỰA CHỌN
+const poolP1_Easy = [
+    { q: "Kĩ thuật là", options: ["hệ thống tri thức về mọi quy luật và sự vận động của vật chất, những quy luật của tự nhiên, xã hội, tư duy.", "ứng dụng các nguyên lí khoa học vào việc thiết kế, chế tạo, vận hành máy móc, thiết bị, công trình, quy mô và hệ thống một cách hiệu quả và kinh tế nhất.", "giải pháp, quy trình, bí quyết kĩ thuật có hoặc không kèm theo công cụ, phương tiện dùng để biến đổi nguồn lực thành sản phẩm, dịch vụ.", "ứng dụng các nguyên lí khoa học vào việc vận hành máy móc, thiết bị một cách hiệu quả và kinh tế."], ans: 1, exp: "Kĩ thuật là ứng dụng các nguyên lí khoa học vào thiết kế, chế tạo, vận hành máy móc, công trình một cách hiệu quả và kinh tế nhất." },
+    { q: "Công nghệ là", options: ["hệ thống tri thức về mọi quy luật và sự vận động của vật chất, những quy luật của tự nhiên, xã hội, tư duy.", "ứng dụng các nguyên lí khoa học vào việc thiết kế, chế tạo, vận hành máy móc, thiết bị một cách kinh tế.", "giải pháp, quy trình, bí quyết kĩ thuật có hoặc không kèm theo công cụ, phương tiện dùng để biến đổi nguồn lực thành sản phẩm, dịch vụ.", "giải pháp dùng để biến đổi năng lượng thành công có ích."], ans: 2, exp: "Công nghệ là giải pháp, quy trình, bí quyết kĩ thuật dùng để biến đổi nguồn lực thành sản phẩm, dịch vụ." },
+    { q: "Công nghệ nào sau đây được phân loại theo lĩnh vực khoa học?", options: ["Công nghệ điện.", "Công nghệ hóa học.", "Công nghệ xây dựng.", "Công nghệ cơ khí."], ans: 1, exp: "Theo lĩnh vực khoa học gồm: Công nghệ hóa học, công nghệ sinh học, công nghệ thông tin..." },
+    { q: "Công nghệ nào sau đây được phân loại theo lĩnh vực kĩ thuật?", options: ["Công nghệ sinh học.", "Công nghệ thông tin.", "Công nghệ cơ khí.", "Công nghệ hóa học."], ans: 2, exp: "Theo lĩnh vực kĩ thuật gồm: Công nghệ cơ khí, công nghệ điện, công nghệ xây dựng, công nghệ vận tải..." },
+    { q: "Phần tử nào sau đây thuộc đầu vào của hệ thống kĩ thuật?", options: ["Thông tin cần xử lí.", "Thông tin đã xử lí.", "Sản phẩm hoàn thiện.", "Vận chuyển."], ans: 0, exp: "Đầu vào của hệ thống kĩ thuật gồm: vật liệu, năng lượng và thông tin cần xử lí." },
+    { q: "Phần tử nào sau đây thuộc đầu ra của hệ thống kĩ thuật?", options: ["Thông tin cần xử lí.", "Thông tin đã xử lí.", "Biến đổi.", "Vật liệu ban đầu."], ans: 1, exp: "Đầu ra của hệ thống kĩ thuật gồm: vật liệu, năng lượng và thông tin đã xử lí." },
+    { q: "Đầu ra của máy tăng âm là", options: ["micro.", "bộ khuếch đại.", "loa.", "micro và loa."], ans: 2, exp: "Trong máy tăng âm, micro là đầu vào, bộ khuếch đại là bộ phận xử lí, loa là đầu ra." },
+    { q: "Bộ phận xử lí của máy tăng âm là", options: ["micro.", "bộ khuếch đại.", "loa.", "dây nguồn."], ans: 1, exp: "Bộ khuếch đại tín hiệu âm thanh đóng vai trò là khối xử lí." },
+    { q: "Đầu vào của bàn là điện là", options: ["điện năng.", "chuyển đổi điện năng thành nhiệt năng.", "nhiệt năng.", "vải quần áo."], ans: 0, exp: "Đầu vào của bàn là là nguồn điện năng được cấp vào." },
+    { q: "Bộ phận xử lí của chiếc bàn là điện là", options: ["điện năng.", "bộ phận chuyển đổi điện năng thành nhiệt năng.", "nhiệt năng tỏa ra.", "dây cắm điện."], ans: 1, exp: "Bộ phận xử lí của bàn là là bộ phận chuyển đổi điện năng thành nhiệt năng." },
+    { q: "Công nghệ luyện kim là", options: ["điều chế kim loại, hợp kim để dùng trong cuộc sống từ các loại quặng hoặc từ các nguyên liệu khác.", "chế tạo sản phẩm kim loại bằng phương pháp nấu kim loại thành trạng thái lỏng rồi rót vào khuôn.", "thực hiện việc lấy đi một phần kim loại của phôi dưới dạng phoi nhờ dụng cụ cắt.", "dùng ngoại lực làm cho kim loại biến dạng theo hình dáng yêu cầu."], ans: 0, exp: "Luyện kim là công nghệ điều chế kim loại, hợp kim từ quặng hoặc nguyên liệu khác." },
+    { q: "Công nghệ đúc là công nghệ", options: ["điều chế kim loại từ quặng.", "dùng ngoại lực làm cho kim loại biến dạng dẻo.", "thực hiện lấy đi một phần kim loại dưới dạng phoi.", "chế tạo sản phẩm kim loại bằng phương pháp nấu kim loại thành trạng thái lỏng, sau đó rót vào khuôn có hình dạng của sản phẩm."], ans: 3, exp: "Đúc là nấu chảy kim loại lỏng rồi rót vào khuôn có hình dáng sản phẩm." },
+    { q: "Công nghệ trí tuệ nhân tạo là", options: ["kết nối, thu thập và trao đổi dữ liệu qua internet.", "phân tách mô hình 3D thành các lớp 2D xếp chồng lên nhau.", "mô phỏng các hoạt động trí tuệ của con người bằng máy móc, đặc biệt là các hệ thống máy tính.", "công nghệ gia công bóc tách phoi kim loại."], ans: 2, exp: "Trí tuệ nhân tạo (AI) mô phỏng các hoạt động trí tuệ của con người bằng máy tính." },
+    { q: "Công nghệ nano là", options: ["phân tích, chế tạo và ứng dụng các vật liệu có cấu trúc nano.", "sản xuất năng lượng chuyển hóa từ nguồn tự nhiên vô hạn.", "sử dụng phần mềm CAD và máy CNC gia công chi tiết.", "phân tách mô hình 3D thành các lớp 2D."], ans: 0, exp: "Công nghệ nano phân tích, chế tạo và ứng dụng các vật liệu, thiết bị ở quy mô nanomet." }
+];
+
+const poolP1_Medium = [
+    { q: "Khi gia công kim loại, công nghệ nào sau đây có bản chất là làm thay đổi hình dáng phôi nhờ ngoại lực tác dụng mà thành phần và khối lượng vật liệu không bị mất đi dưới dạng phoi?", options: ["Công nghệ gia công áp lực.", "Công nghệ đúc.", "Công nghệ gia công cắt gọt.", "Công nghệ hàn."], ans: 0, exp: "Gia công áp lực (rèn, dập, cán, kéo) làm biến dạng dẻo kim loại mà không làm mất vật liệu dưới dạng phoi." },
+    { q: "Trong các xưởng cơ khí, khi người thợ sử dụng máy tiện để gia công một chi tiết trục tròn, bản chất của quá trình này là", options: ["làm nóng chảy kim loại rồi đổ vào lòng khuôn rỗng.", "dùng lực ép lớn từ máy dập để làm biến dạng phôi ở trạng thái nguội.", "bóc tách các lớp vật liệu dư thừa trên bề mặt phôi dưới dạng phoi để đạt hình dáng mong muốn.", "sử dụng nguồn nhiệt cao để ghép dính hai chi tiết lại với nhau."], ans: 2, exp: "Tiện là công nghệ gia công cắt gọt, bản chất là lấy đi lớp kim loại thừa dưới dạng phoi." },
+    { q: "Công nghệ gia công cắt gọt bao gồm những phương pháp nào sau đây?", options: ["Công nghệ tiện, phay, kéo, rèn.", "Công nghệ cán, kéo, rèn, dập.", "Công nghệ tiện, phay, bào, mài.", "Công nghệ bào, mài, cán, kéo."], ans: 2, exp: "Gia công cắt gọt gồm: tiện, phay, bào, mài, khoan, doa..." },
+    { q: "Đâu là phát biểu đúng về đặc điểm của công nghệ sản xuất điện năng từ năng lượng tái tạo?", options: ["Hoạt động hoàn toàn ổn định liên tục 24/7 mà không phụ thuộc vào thời tiết.", "Tận dụng nguồn năng lượng tự nhiên vô hạn, giúp giảm thiểu khí thải ô nhiễm nhưng hiệu suất phụ thuộc nhiều vào thời tiết.", "Có quy trình vận hành và nguyên lý hoạt động giống hệt với nhà máy nhiệt điện than.", "Chỉ có thể tạo ra dòng điện một chiều mà không đưa lên lưới điện được."], ans: 1, exp: "Năng lượng tái tạo sạch, vô hạn nhưng phụ thuộc lớn vào thời tiết, khí hậu." },
+    { q: "Khi nói về công nghệ đúc trong cơ khí chế tạo, nhận định nào sau đây là đúng về bản chất và khả năng chế tạo của công nghệ này?", options: ["Chỉ chế tạo được các chi tiết có hình dáng cực kì đơn giản và kích thước dưới 1 kg.", "Bắt buộc phải sử dụng phôi tấm mỏng và gia công bằng máy dập thô.", "Chế tạo được các vật phẩm bằng cách rót vật liệu lỏng vào khuôn, cho phép tạo ra các chi tiết có hình dạng lòng trong phức tạp.", "Tạo ra sản phẩm có độ chính xác tuyệt đối mà không cần qua bất kì công đoạn gia công nào khác."], ans: 2, exp: "Đúc có ưu điểm nổi bật là tạo được các chi tiết có kết cấu rỗng, hình dạng lòng trong phức tạp." },
+    { q: "So với các công nghệ gia công cắt gọt truyền thống, công nghệ in 3D có đặc điểm bản chất nào sau đây?", options: ["Phải sử dụng các dụng cụ cắt sắc bén để bóc tách, loại bỏ dần vật liệu dư thừa từ phôi lớn.", "Chỉ chế tạo được các sản phẩm có hình học đơn giản và không thể dùng vật liệu nhựa.", "Nấu chảy kim loại rồi rót vào lòng khuôn rỗng có sẵn.", "Chế tạo sản phẩm bằng cách đắp vật liệu lên từng lớp một (gia công cộng) dựa trên mô hình thiết kế ba chiều trên máy tính."], ans: 3, exp: "In 3D là phương pháp gia công cộng (bồi đắp từng lớp vật liệu từ mô hình 3D trên máy tính)." }
+];
+
+const poolP1_Hardest = [ // 2 CÂU KHÓ NHẤT NẰM Ở CUỐI (CÂU 11 & CÂU 12)
+    { 
+        q: "Trên thị trường hiện nay, nhiều loại khẩu trang y tế cao cấp hoặc màng lọc của máy lọc không khí gia đình được ứng dụng 'công nghệ nano bạc (nano silver)'. Hiệu quả kháng khuẩn vượt trội của lớp nano bạc này dựa trên cơ sở khoa học nào?",
+        options: [
+            "Ở kích thước nanomet, bạc giải phóng liên tục các ion siêu nhỏ phá vỡ màng tế bào của vi khuẩn, mang lại khả năng kháng khuẩn và khử mùi vượt trội mà khối bạc thông thường không có.",
+            "Các hạt bạc được phóng to kích thước giúp màng lọc trở nên dày hơn, ngăn chặn cơ học mọi loại bụi mịn.",
+            "Lớp bạc nano làm tăng trọng lượng của khẩu trang, khiến các hạt bụi khi va chạm sẽ bị giữ lại do quán tính.",
+            "Lớp nano bạc có khả năng phát ra các tia phóng xạ tiêu diệt virus từ khoảng cách xa."
+        ],
+        ans: 0,
+        exp: "Khi thu nhỏ xuống kích thước nanomet (1-100 nm), diện tích bề mặt tăng vọt và giải phóng ion Ag+ có khả năng phá hủy màng tế bào và ức chế enzyme vi khuẩn."
+    },
+    { 
+        q: "Hiện nay, tại nhiều bệnh viện lớn, các bác sĩ đã ứng dụng công nghệ in 3D để tạo ra các mảnh xương nhân tạo, khớp nhân tạo bằng vật liệu sinh học khớp chính xác tuyệt đối theo cấu trúc cơ thể của từng bệnh nhân trước khi phẫu thuật. Ứng dụng thực tế này của công nghệ in 3D dựa trên đặc điểm ưu việt nào?",
+        options: [
+            "Khả năng chế tạo cá thể hóa, tạo ra các vật phẩm có biên dạng bề mặt phức tạp, rỗng bên trong theo dữ liệu giải phẫu từng người mà các phương pháp đúc, cắt gọt truyền thống rất khó thực hiện.",
+            "Tốc độ sản xuất hàng loạt hàng triệu sản phẩm giống hệt nhau trong thời gian ngắn với chi phí cực kì rẻ.",
+            "Khả năng tự động gọt giũa khối vật liệu thô ban đầu để thải bỏ an toàn vào môi trường.",
+            "Khả năng tự biến đổi cấu trúc sinh học để tiêu biến hoàn toàn trong cơ thể sau vài ngày."
+        ],
+        ans: 0,
+        exp: "Ưu thế vượt trội của in 3D trong y tế là sản xuất cá thể hóa (customization): tạo sản phẩm có biên dạng bề mặt và lòng xốp rỗng phức tạp khớp 100% với từng bệnh nhân."
+    }
+];
+
+// 2. PHẦN II: ĐÚNG / SAI
+const poolP2_Standard = [
+    {
+        title: "Khi tìm hiểu về khái niệm, thành phần và cấu trúc của một hệ thống kĩ thuật tổng quát:",
+        items: [
+            { text: "Cấu trúc của một hệ thống kĩ thuật cơ bản gồm 3 bộ phận chính: Đầu vào, Xử lí và Đầu ra.", ans: true, exp: "Đúng theo định nghĩa cấu trúc hệ thống kĩ thuật." },
+            { text: "Đầu vào của hệ thống kĩ thuật chỉ có thể là vật liệu, không bao gồm năng lượng hay thông tin.", ans: false, exp: "Sai, đầu vào gồm vật liệu, năng lượng và thông tin cần xử lí." },
+            { text: "Bộ phận xử lí có thể thực hiện một hoặc nhiều chức năng gồm: biến đổi, vận chuyển, lưu trữ vật liệu, năng lượng, thông tin.", ans: true, exp: "Đúng với chức năng của khối xử lí." },
+            { text: "Tín hiệu phản hồi trong hệ thống kĩ thuật tự động là thông tin được lấy từ đầu ra để đưa ngược về bộ phận xử lí nhằm điều chỉnh đầu vào.", ans: true, exp: "Đúng, phản hồi giúp hệ thống tự động ổn định." }
+        ]
+    },
+    {
+        title: "Một nhóm học sinh trao đổi về một số công nghệ phổ biến trong lĩnh vực luyện kim, cơ khí:",
+        items: [
+            { text: "Công nghệ luyện kim chia thành hai loại gồm công nghệ luyện kim đen và công nghệ luyện kim màu.", ans: true, exp: "Đúng: luyện kim đen (gang, thép) và luyện kim màu (đồng, nhôm...)." },
+            { text: "Bản chất của công nghệ gia công cắt gọt là công nghệ dùng nhiệt độ cao để nối các chi tiết kim loại với nhau.", ans: false, exp: "Sai, dùng nhiệt nối chi tiết là công nghệ hàn, không phải cắt gọt." },
+            { text: "Công nghệ gia công áp lực dựa vào tính dẻo của kim loại, dùng ngoại lực làm biến dạng phôi mà không sinh ra phoi vụn.", ans: true, exp: "Đúng theo định nghĩa gia công áp lực (rèn, dập)." },
+            { text: "Sản phẩm của công nghệ đúc cho phép tạo ra các chi tiết có hình dáng và cấu trúc lòng trong (rỗng) phức tạp.", ans: true, exp: "Đúng, đây là ưu điểm nổi bật của công nghệ đúc." }
+        ]
+    }
+];
+
+const poolP2_Hardest = [ // 2 CÂU ĐÚNG SAI TÌNH HUỐNG THỰC TẾ CUỐI CÙNG (CÂU 3 & CÂU 4)
+    {
+        title: "Một trang trại nông nghiệp lắp đặt một hệ thống pin năng lượng mặt trời áp mái để cung cấp điện cho hệ thống tưới tiêu. Hệ thống phát điện tối đa vào buổi trưa nắng gắt, nhưng bị giảm mạnh và ngừng hoạt động vào ban đêm hoặc những ngày mưa bão kéo dài:",
+        items: [
+            { text: "Công nghệ sản xuất điện từ năng lượng mặt trời được xếp vào nhóm công nghệ năng lượng tái tạo.", ans: true, exp: "Đúng, năng lượng mặt trời là năng lượng tái tạo sạch." },
+            { text: "Công nghệ sản xuất điện năng phổ biến hiện nay chỉ bao gồm điện mặt trời và điện gió, không còn sử dụng năng lượng hóa thạch hay thủy điện.", ans: false, exp: "Sai, năng lượng hóa thạch (than, khí) và thủy điện hiện vẫn chiếm tỷ trọng lớn." },
+            { text: "Điểm hạn chế khiến hệ thống điện của trang trại ngừng phát điện vào ban đêm là do hiệu suất của công nghệ năng lượng tái tạo phụ thuộc rất lớn vào điều kiện thời tiết, khí hậu.", ans: true, exp: "Đúng, tính không liên tục phụ thuộc thời tiết là nhược điểm cốt lõi." },
+            { text: "Về mặt môi trường, hệ thống điện mặt trời tại trang trại giúp tận dụng nguồn năng lượng tự nhiên vô hạn và không phát thải khí nhà kính trong quá trình vận hành.", ans: true, exp: "Đúng, đây là lợi ích sinh thái to lớn của điện mặt trời." }
+        ]
+    },
+    {
+        title: "Tại một trung tâm y tế kĩ thuật cao, các bác sĩ ứng dụng công nghệ in 3D để tạo ra đoạn xương đùi nhân tạo bằng vật liệu hợp kim titan sinh học có hình dạng, cấu trúc rỗng chính xác tuyệt đối theo cấu trúc cơ thể của riêng bệnh nhân trước khi phẫu thuật:",
+        items: [
+            { text: "Công nghệ in 3D là công nghệ chế tạo sản phẩm bằng cách bồi đắp (cộng vật liệu) từng lớp một từ mô hình thiết kế ba chiều trên máy vi tính.", ans: true, exp: "Đúng theo bản chất gia công cộng của in 3D." },
+            { text: "Công nghệ in 3D và công nghệ gia công cắt gọt truyền thống (như tiện, phay) đều chung một bản chất kĩ thuật là bóc tách và gọt bỏ dần vật liệu dư thừa từ phôi thô.", ans: false, exp: "Sai, tiện phay là gia công trừ (bóc tách phoi), còn in 3D là gia công cộng (bồi đắp)." },
+            { text: "Việc lựa chọn công nghệ in 3D trong tình huống trên là hợp lý vì ưu điểm lớn của nó là tạo ra được các sản phẩm có cấu trúc rỗng phức tạp theo thiết kế cá thể hóa.", ans: true, exp: "Đúng, đây là điểm mạnh độc nhất của in 3D trong y học." },
+            { text: "Điểm hạn chế lớn nhất của công nghệ in 3D thể hiện qua ca phẫu thuật trên là bắt buộc phải đúc sẵn một khuôn kim loại rỗng trước khi in.", ans: false, exp: "Sai, in 3D đắp trực tiếp từ mô hình số máy tính mà hoàn toàn không cần dùng khuôn." }
+        ]
+    }
+];
+
+// PHẦN III: TỰ LUẬN
+const essayPool = [
+    {
+        q: "Trong những năm gần đây, sự bùng nổ của các ứng dụng gọi xe công nghệ (Grab, Xanh SM) và sàn thương mại điện tử (Shopee, TikTok Shop) đã thay đổi hoàn toàn thói quen mua sắm, di chuyển của người dân.<br><b>a)</b> Nêu mối liên hệ giữa công nghệ với tự nhiên, con người và xã hội.<br><b>b)</b> Phân tích tác động tích cực và tiêu cực của sự chuyển dịch công nghệ này đối với người lao động và xã hội.",
+        guide: "<b>Gợi ý đáp án & Thang điểm:</b><br>" +
+               "• <i>Công nghệ với tự nhiên:</i> Giúp khám phá, ứng phó biến đổi khí hậu nhưng cũng khai thác làm cạn kiệt tài nguyên (0,5đ).<br>" +
+               "• <i>Công nghệ với con người:</i> Tăng tiện nghi, nâng cao năng suất nhưng gây nguy cơ thất nghiệp đối với lao động thủ công (0,5đ).<br>" +
+               "• <i>Công nghệ với xã hội:</i> Thúc đẩy kinh tế số phát triển nhưng tạo sự lệ thuộc vào công nghệ (0,5đ).<br>" +
+               "• <i>Tích cực:</i> Tiết kiệm thời gian, tối ưu dịch vụ, tạo việc làm mới cho tài xế và người giao hàng (0,75đ).<br>" +
+               "• <i>Tiêu cực & Giải pháp:</i> Gây khó khăn cho xe ôm, chợ truyền thống; người lao động cần chủ động học hỏi kĩ năng số để thích ứng (0,75đ)."
+    },
+    {
+        q: "Một doanh nghiệp cơ khí đang lên kế hoạch sản xuất các linh kiện vi mạch điện tử siêu nhỏ có độ chính xác cao và các mô hình vỏ thiết bị tùy biến theo đơn đặt hàng đơn chiếc của khách hàng. Doanh nghiệp đang phân vân giữa việc đầu tư <b>Công nghệ in 3D</b> và <b>Công nghệ nano</b>.<br>Bằng kiến thức đã học, em hãy trình bày bản chất và hướng ứng dụng trong thực tế sản xuất của hai loại công nghệ mới này để tư vấn cho doanh nghiệp.",
+        guide: "<b>Gợi ý đáp án & Thang điểm:</b><br>" +
+               "• <i>Công nghệ in 3D:</i><br>" +
+               "  - Bản chất: Chế tạo sản phẩm bằng cách bồi đắp từng lớp vật liệu (gia công cộng) từ mô hình 3D trên máy tính (0,75đ).<br>" +
+               "  - Hướng ứng dụng: Phù hợp nhất cho việc sản xuất vỏ thiết bị đơn chiếc, cá thể hóa, chi tiết lòng rỗng phức tạp mà không cần khuôn mẫu (0,75đ).<br>" +
+               "• <i>Công nghệ nano:</i><br>" +
+               "  - Bản chất: Phân tích, chế tạo và ứng dụng vật liệu ở quy mô nanomet (nguyên tử, phân tử) để mang lại tính chất lý - hóa đặc biệt mới (0,75đ).<br>" +
+               "  - Hướng ứng dụng: Phù hợp để sản xuất linh kiện vi mạch điện tử siêu nhỏ, chip bán dẫn, cảm biến siêu nhạy (0,75đ)."
+    }
+];
+
+/* ===============================================================
+   BIẾN TOÀN CỤC & ĐIỀU KHIỂN SỰ KIỆN
+   =============================================================== */
+let currentP1 = [];
+let currentP2 = [];
+let currentEssay = null;
+let timerInterval = null;
+let timeLeft = 25 * 60;
+let studentName = "";
+let studentClass = "";
+let examCode = 101;
+
+function shuffle(arr) {
+    return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// BẮT ĐẦU LÀM BÀI (ĐÃ FIX LỖI CẢM ỨNG MOBILE)
+function handleStart() {
+    let nameVal = document.getElementById("inp-name").value.trim();
+    let classVal = document.getElementById("inp-class").value.trim();
+
+    // Tự động gán nếu để trống để người dùng luôn vào thi được ngay
+    studentName = nameVal || "Học sinh";
+    studentClass = classVal || "10";
+
+    // Sinh mã đề ngẫu nhiên 3 chữ số
+    examCode = Math.floor(Math.random() * (998 - 102 + 1)) + 102;
+    document.getElementById("txt-student").innerText = `HS: ${studentName} (${studentClass})`;
+    document.getElementById("txt-code").innerText = `Mã đề: ${examCode}`;
+
+    // SẮP XẾP ĐỘ KHÓ TĂNG DẦN:
+    // Phần I (12 câu): 6 Nhận biết + 4 Thông hiểu + 2 CÂU KHÓ NHẤT Ở CUỐI (Câu 11 & 12)
+    const p1_p1 = shuffle(poolP1_Easy).slice(0, 6);
+    const p1_p2 = shuffle(poolP1_Medium).slice(0, 4);
+    const p1_p3 = shuffle(poolP1_Hardest).slice(0, 2);
+    currentP1 = [...p1_p1, ...p1_p2, ...p1_p3];
+
+    // Phần II (4 câu): 2 câu Thông hiểu + 2 CÂU TÌNH HUỐNG KHÓ NHẤT Ở CUỐI (Câu 3 & 4)
+    const p2_p1 = shuffle(poolP2_Standard).slice(0, 2);
+    const p2_p2 = shuffle(poolP2_Hardest).slice(0, 2);
+    currentP2 = [...p2_p1, ...p2_p2];
+
+    currentEssay = shuffle(essayPool)[0];
+
+    renderExam();
+
+    document.getElementById("screen-start").style.display = "none";
+    document.getElementById("screen-exam").style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    startTimer();
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById("timer-display").innerText = 
+            `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            processSubmit();
+        }
+    }, 1000);
+}
+
+// RENDER GIAO DIỆN CÂU HỎI (ĐÃ BỎ HOÀN TOÀN TẤT CẢ CHỮ NÂNG CAO)
+function renderExam() {
+    // 1. Render Phần I (chỉ ghi Câu 1, Câu 2...)
+    const c1 = document.getElementById("container-p1");
+    c1.innerHTML = "";
+    currentP1.forEach((q, idx) => {
+        const qCard = document.createElement("div");
+        qCard.className = "card";
+        qCard.innerHTML = `
+            <div class="q-text">
+                <span style="color: var(--primary);">Câu ${idx + 1}:</span> ${q.q}
+            </div>
+            <div>
+                ${q.options.map((opt, oIdx) => `
+                    <label class="option-row">
+                        <div class="option-content" id="opt-p1-${idx}-${oIdx}">
+                            <input type="radio" name="p1_${idx}" value="${oIdx}">
+                            <span><b>${['A', 'B', 'C', 'D'][oIdx]}.</b> ${opt}</span>
+                        </div>
+                    </label>
+                `).join('')}
+            </div>
+            <div class="explanation-box" id="exp-p1-${idx}"></div>
+        `;
+        c1.appendChild(qCard);
+    });
+
+    // 2. Render Phần II (chỉ ghi Câu 1, Câu 2...)
+    const c2 = document.getElementById("container-p2");
+    c2.innerHTML = "";
+    currentP2.forEach((q, idx) => {
+        const qCard = document.createElement("div");
+        qCard.className = "card";
+        qCard.innerHTML = `
+            <div class="q-text">
+                <span style="color: var(--primary);">Câu ${idx + 1}:</span> ${q.title}
+            </div>
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Các nhận định</th>
+                        <th class="tf-col-opt">Đúng</th>
+                        <th class="tf-col-opt">Sai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${q.items.map((sub, sIdx) => `
+                        <tr id="row-p2-${idx}-${sIdx}">
+                            <td><b>${['a)', 'b)', 'c)', 'd)'][sIdx]}</b> ${sub.text}</td>
+                            <td class="tf-col-opt"><input type="radio" name="p2_${idx}_${sIdx}" value="true"></td>
+                            <td class="tf-col-opt"><input type="radio" name="p2_${idx}_${sIdx}" value="false"></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div class="explanation-box" id="exp-p2-${idx}"></div>
+        `;
+        c2.appendChild(qCard);
+    });
+
+    // 3. Render Phần III (Tự luận)
+    document.getElementById("essay-content").innerHTML = `
+        <div class="q-text"><b>Câu hỏi tình huống:</b><br>${currentEssay.q}</div>
+        <div class="essay-card" id="essay-guide-box" style="display: none;">
+            ${currentEssay.guide}
+        </div>
+    `;
+}
+
+// MODAL POPUP
+function openConfirmModal() {
+    document.getElementById("confirm-modal").style.display = "flex";
+}
+function closeConfirmModal() {
+    document.getElementById("confirm-modal").style.display = "none";
+}
+
+// CHẤM ĐIỂM
+function processSubmit() {
+    closeConfirmModal();
+    clearInterval(timerInterval);
+
+    // 1. Chấm Phần I (12 câu * 0,25đ = 3,0đ)
+    let p1Correct = 0;
+    currentP1.forEach((q, idx) => {
+        const radios = document.getElementsByName(`p1_${idx}`);
+        let userSelected = -1;
+        for (let i = 0; i < radios.length; i++) {
+            if (radios[i].checked) { userSelected = parseInt(radios[i].value); break; }
+        }
+
+        const exp = document.getElementById(`exp-p1-${idx}`);
+        exp.style.display = "block";
+        exp.innerHTML = `💡 <b>Đáp án đúng: ${['A','B','C','D'][q.ans]}</b> - ${q.exp}`;
+
+        if (userSelected !== -1) {
+            const userBox = document.getElementById(`opt-p1-${idx}-${userSelected}`);
+            if (userSelected === q.ans) {
+                p1Correct++;
+                userBox.classList.add("ans-correct");
+            } else {
+                userBox.classList.add("ans-wrong");
+                document.getElementById(`opt-p1-${idx}-${q.ans}`).classList.add("ans-correct");
+            }
+        } else {
+            document.getElementById(`opt-p1-${idx}-${q.ans}`).classList.add("ans-correct");
+        }
+    });
+    const p1Score = p1Correct * 0.25;
+
+    // 2. Chấm Phần II (4 câu = 4,0đ theo quy chuẩn Bộ GD&ĐT)
+    let p2Score = 0;
+    currentP2.forEach((q, idx) => {
+        let correctCount = 0;
+        let expText = "💡 <b>Chi tiết từng ý:</b><br>";
+
+        q.items.forEach((sub, sIdx) => {
+            const radios = document.getElementsByName(`p2_${idx}_${sIdx}`);
+            let val = null;
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) { val = (radios[i].value === "true"); break; }
+            }
+
+            const row = document.getElementById(`row-p2-${idx}-${sIdx}`);
+            expText += `• <b>${['a', 'b', 'c', 'd'][sIdx]}:</b> [${sub.ans ? "ĐÚNG" : "SAI"}] - ${sub.exp}<br>`;
+
+            if (val !== null) {
+                if (val === sub.ans) {
+                    correctCount++;
+                    row.classList.add("ans-correct");
+                } else {
+                    row.classList.add("ans-wrong");
+                }
+            }
+        });
+
+        if (correctCount === 1) p2Score += 0.1;
+        else if (correctCount === 2) p2Score += 0.25;
+        else if (correctCount === 3) p2Score += 0.5;
+        else if (correctCount === 4) p2Score += 1.0;
+
+        const exp = document.getElementById(`exp-p2-${idx}`);
+        exp.style.display = "block";
+        exp.innerHTML = expText;
+    });
+
+    const totalScore = Math.min(7.0, Math.round((p1Score + p2Score) * 100) / 100);
+
+    // Nhận xét năng lực
+    let evalText = "";
+    if (totalScore >= 6.25) {
+        evalText = "🌟 <b>ĐÁNH GIÁ: XUẤT SẮC!</b> Em nắm rất vững bản chất công nghệ, phân biệt rõ các công nghệ mới và hoàn thành xuất sắc các câu hỏi thực tế.";
+    } else if (totalScore >= 5.0) {
+        evalText = "👏 <b>ĐÁNH GIÁ: KHÁ - TỐT!</b> Em nắm tốt lý thuyết đại cương và cấu trúc hệ thống kĩ thuật. Tuy nhiên cần chú ý đọc kĩ các nhận định Đúng/Sai để tránh mất điểm.";
+    } else if (totalScore >= 3.5) {
+        evalText = "⚠️ <b>ĐÁNH GIÁ: ĐẠT MỨC TRUNG BÌNH.</b> Em cần xem lại bản chất công nghệ gia công cắt gọt, gia công áp lực và các thành phần của hệ thống kĩ thuật.";
+    } else {
+        evalText = "❗ <b>ĐÁNH GIÁ: CẦN CỐ GẮNG ÔN TẬP!</b> Em bị hổng khá nhiều kiến thức trọng tâm từ Bài 1 đến Bài 4. Hãy đọc kĩ lời giải thích phía dưới và làm lại nhé.";
+    }
+
+    // Hiển thị khung điểm
+    const resBox = document.getElementById("result-box");
+    resBox.className = "score-card";
+    resBox.innerHTML = `
+        <h3 style="color: var(--primary-dark);">KẾT QUẢ ĐIỂM TRẮC NGHIỆM GHK1</h3>
+        <div class="score-val">${totalScore.toFixed(2)} / 7.00 ĐIỂM</div>
+        <div style="font-size: 0.95rem; color: #424242;">
+            • Phần I (Trắc nghiệm): <b>${p1Score.toFixed(2)} / 3,00</b> (Đúng ${p1Correct}/12 câu)<br>
+            • Phần II (Đúng / Sai): <b>${p2Score.toFixed(2)} / 4,00</b>
+        </div>
+        <div class="feedback-note">${evalText}</div>
+    `;
+    resBox.style.display = "block";
+
+    // Khóa các ô chọn
+    const allInputs = document.querySelectorAll("#screen-exam input");
+    allInputs.forEach(i => i.disabled = true);
+
+    // Mở phần tự luận và hướng dẫn chấm
+    document.getElementById("container-p3").style.display = "block";
+    document.getElementById("essay-guide-box").style.display = "block";
+
+    // Đổi nút bấm
+    document.getElementById("btn-submit").style.display = "none";
+    document.getElementById("btn-restart").style.display = "block";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// GẮN SỰ KIỆN CHẮC CHẮN HOẠT ĐỘNG TRÊN TẤT CẢ TRÌNH DUYỆT MOBILE & PC
+document.addEventListener("DOMContentLoaded", function() {
+    const btnStart = document.getElementById("btn-start");
+    btnStart.addEventListener("click", handleStart);
+
+    const btnSubmit = document.getElementById("btn-submit");
+    btnSubmit.addEventListener("click", openConfirmModal);
+
+    const btnModalCancel = document.getElementById("btn-modal-cancel");
+    btnModalCancel.addEventListener("click", closeConfirmModal);
+
+    const btnModalOk = document.getElementById("btn-modal-ok");
+    btnModalOk.addEventListener("click", processSubmit);
+
+    const btnRestart = document.getElementById("btn-restart");
+    btnRestart.addEventListener("click", function() { location.reload(); });
+});
+</script>
+</body>
+</html>
